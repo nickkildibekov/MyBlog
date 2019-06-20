@@ -1,0 +1,61 @@
+﻿@model Common.Models.Post
+@{
+    Layout = null;
+}
+
+<div class ="text-center font-weight-bold text-danger">
+    <h2>Delete post?</h2>
+</div>
+
+
+<div class="container  ">
+    <div class="row bg-light">
+        <div class="col-md-3">
+            <div class="d-flex justify-content-center">
+                <span class="font-weight-light">
+                    @{
+                        var shortdate = Model.PostedDateTime.ToString( "MMMM d, yyyy" );
+                    }
+                    @Html.DisplayFor( modelItem => shortdate )
+                </span>
+            </div>
+            <div class="d-flex justify-content-center">
+                <h4>@Html.DisplayFor( modelItem => Model.Title )</h4>
+            </div>
+            <div class="d-flex justify-content-center">
+
+                <h6>@Html.DisplayFor( modelItem => Model.Category )</h6>
+            </div>
+            <div class="d-flex justify-content-center">
+
+                <img src="@Url.Action("GetThumbnailImage", "Posts", new {Model.Id})" alt="PostImage" width="170" height="170" />
+            </div>
+            </div>
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between">
+                <h3>@Html.DisplayFor( modelItem => Model.Description )</h3>
+            </div>
+            <div class="d-flex justify-content-start">
+                <p>
+                    @Html.DisplayFor( modelItem => Model.Content)
+                </p>
+
+            </div>
+            <div class="d-flex p-3 align-bottom justify-content-around">
+                @if (Model.Author != null && Model.Author == User.Identity.Name)
+                {
+                    <div>
+                        <div>
+                            <a class = "btn btn-success" href="@Url.Action( "Index", "Home")">Get Back</a>
+                        </div>
+                    </div>
+                        <div>
+                            @Ajax.ActionLink( @"Delete", "Delete", "Posts",
+                                new { id = Model.Id },
+                                new AjaxOptions { HttpMethod = "Post"}, htmlAttributes: new { @class = "btn btn-danger" })
+                        </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

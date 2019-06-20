@@ -1,0 +1,17 @@
+﻿@model Common.Models.ApplicationRole
+
+@{
+    Layout = null;
+}
+<h2>Role edit</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div>
+        @Html.HiddenFor( model => model.Id )
+        <p>Role name:  @Html.EditorFor( model => model.Name )</p>
+        <p><input type="submit" value="Save" /></p>
+    </div>
+}

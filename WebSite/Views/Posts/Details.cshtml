@@ -1,0 +1,81 @@
+﻿@model Common.Models.Post
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="~/Scripts/jquery-3.0.0.min.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <title>@ViewBag.Title - My Blog</title>
+    @Styles.Render( "~/Content/css" )
+    @Scripts.Render( "~/bundles/modernizr" )
+
+</head>
+<body>
+    <div>
+        <h4>Post</h4>
+        <hr />
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor( model => model.Title )
+            </dt>
+
+            <dd>
+                @Html.DisplayFor( model => model.Title )
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor( model => model.Description )
+            </dt>
+
+            <dd>
+                @Html.DisplayFor( model => model.Description )
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor( model => model.Content )
+            </dt>
+
+            <dd>
+                @Html.DisplayFor( model => model.Content )
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor( model => model.Category )
+            </dt>
+
+            <dd>
+                @Html.DisplayFor( model => model.Category )
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor( model => model.PostedDateTime )
+            </dt>
+
+            <dd>
+                @Html.DisplayFor( model => model.PostedDateTime )
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor( model => model.ModifiedDateTime )
+            </dt>
+
+            <dd>
+                @Html.DisplayFor( model => model.ModifiedDateTime )
+            </dd>
+
+        </dl>
+    </div>
+    <p>
+        @Html.ActionLink( "Edit", "Edit", new { id = Model.Id } ) |
+        @Html.ActionLink( "Back to List", "Index" )
+    </p>
+</body>
+</html>

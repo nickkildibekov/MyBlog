@@ -1,0 +1,104 @@
+﻿@using System.Linq
+@model WebSite.ViewModels.IndexViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="~/Scripts/jquery-3.0.0.min.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <title>@ViewBag.Title My Blog</title>
+    @Styles.Render( "~/Content/css" )
+    @Scripts.Render( "~/bundles/modernizr" )
+
+</head>
+<body>
+    <div class="container ">
+        <div class="row justify-content-around justify-content-center border-bottom border-secondary">
+            <div class="col-2 pt-1 font-weight-bold text-center">
+                <a href="@Url.Action("Index", "Home")">
+                    <img src="../Images/logo2.jpg" alt="logo">
+                </a>
+            </div>
+            <div class="col-2 pt-1 font-weight-bold text-center">
+                @using (Ajax.BeginForm( "PostSearch" new AjaxOptions()
+            { HttpMethod = "GET", UpdateTargetId = "main_area" } ))
+            {
+                    <div class="input-group">
+                        <input type="text" name="text" class="form-control" placeholder="Search for...">
+                        <span>
+                            <button type="submit" class="btn ">Go</button>
+                        </span>
+                    </div>
+                }
+            </div>
+            <div class="col-2 pt-1 font-weight-bold text-center">
+                @if (User.Identity.IsAuthenticated)
+            {
+                    @User.Identity.Name
+                }
+                else
+                {
+                    @Ajax.ActionLink( @"Log In", "Login", "Account", null,
+                        new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "btn btn-secondary" }
+                        )
+                }
+                @if (!User.Identity.IsAuthenticated)
+            {
+                @Ajax.ActionLink( @"Sign up", "Register", "Account", null,
+                    new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "btn btn-secondary" }
+                    )
+            }
+                else
+                {
+                    <a href="@Url.Action("Logout", "Account")">
+                        <button type="button" class="btn btn-secondary">Sign out</button>
+                    </a>
+                }
+                <p></p>
+
+            </div>
+        </div>
+        <p></p>
+    </div>
+    <div class="container body-content">
+        <nav class="d-flex flex-wrap justify-content-around">
+            @foreach (var categories in Model.Categories)
+            {
+
+                @Ajax.ActionLink( @categories.Name, "CategoryFilter",
+            new { text = categories.Name },
+            new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" },
+            htmlAttributes: new { @class = "text-primary" } )
+            }
+        </nav>
+        <p></p>
+        @RenderBody()
+    </div>
+    <script>
+        $(function () {
+            var links = $("nav>a[class$='text-primary']");
+            links.eq(0).addClass("text-dark btn btn-outline-success");
+            links.eq(1).addClass("text-dark btn btn-outline-primary");
+            links.eq(2).addClass("text-dark btn btn-outline-secondary");
+            links.eq(3).addClass("text-dark btn btn-outline-danger");
+            links.eq(4).addClass("text-dark btn btn-outline-warning");
+
+        });
+    </script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+
+
+
+
+
+</html>

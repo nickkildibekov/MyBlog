@@ -1,0 +1,414 @@
+﻿@using System.Linq
+@model WebSite.ViewModels.IndexViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <title>@ViewBag.Title My Blog</title>
+</head>
+<body>
+    <div class="container sticky-top bg-white">
+        <div class="row justify-content-between border-bottom border-secondary">
+            <div class="col-2 pt-1 font-weight-bold text-center">
+                <a href="@Url.Action("Index", "Home")">
+                    <img src="../Images/logo2.jpg" alt="logo">
+                </a>
+            </div>
+            <div class="col-2 pt-1 font-weight-bold text-center">
+                @using (Ajax.BeginForm( "PostSearch", new AjaxOptions()
+                { HttpMethod = "GET", UpdateTargetId = "main_area" } ))
+                {
+                    <div class="input-group">
+                        <input type="text" name="text" class="form-control" placeholder="Search for...">
+                        <span>
+                            <button type="submit" class="btn ">Go</button>
+                        </span>
+                    </div>
+                }
+            </div>
+            <div class="col-4 pt-1 font-weight-bold text-center">
+                <div class="row justify-content-end ">
+                    @if (Model.Posts.ToList().Any( p => !p.IsApproved && !p.IsDeclined && !p.IsDeleted ) && User.IsInRole( "Admin" ))
+                    {
+                        <div id="newImg">
+                            @Ajax.ActionLink( "New", "NewStateFilter", new { state = true },
+                                         new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area", OnSuccess = "hideLabel" }, htmlAttributes: new { @class = "btn btn-warning" }
+                                         )
+                        </div>
+                    }
+                    @if (User.IsInRole( "Admin" ))
+                    {
+                        <div class="dropdown show">
+                            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Posts: @Model.Posts.Where( p => !p.IsDeleted ).ToList().Count
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                @{
+                                    var apprCount = Model.Posts.Where( p => p.IsApproved ).ToList().Count;
+                                    var declCount = Model.Posts.Where( p => p.IsDeclined ).ToList().Count;
+                                    var newCount = Model.Posts.Where( p => !p.IsDeleted && !p.IsApproved && !p.IsDeclined ).ToList().Count;
+                                }
+
+                                @if (apprCount > 0)
+                                {
+                                    @Ajax.ActionLink( @"Approved: " + apprCount, "ApprovedStateFilter", new { state = true },
+                                        new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "dropdown-item" }
+                                        );
+                                }
+                                @if (declCount > 0)
+                                {
+                                    @Ajax.ActionLink( @"Declined: " + declCount, "DeclinedStateFilter", new { state = true },
+                                        new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "dropdown-item" }
+                                        );
+                                }
+                                @if (newCount > 0)
+                                {
+                                    <div id="newDropdown">
+                                        @Ajax.ActionLink( @"New: " + newCount, "NewStateFilter", new { state = true },
+                                            new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "dropdown-item" }
+                                            )
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="dropdown show">
+                            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Admin Panel
+                            </a>
+
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                @Ajax.ActionLink( @"Get all users", "Index", "Account", null,
+                                    new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "dropdown-item" }
+                                    )
+                                @Ajax.ActionLink( @"Get all roles", "Index", "Roles", null,
+                                    new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "dropdown-item" }
+                                    )
+                            </div>
+                        </div>
+                                    }
+                    @if (User.Identity.IsAuthenticated && !User.IsInRole( "Admin" ))
+                    {
+
+                        <div class="dropdown show">
+                            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                @User.Identity.Name
+                            </a>
+
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                @Ajax.ActionLink( "My Posts", "AuthorFilter", new { text = User.Identity.Name },
+                                    new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" },
+                                    htmlAttributes: new { @class = "dropdown-item" }
+                                    )
+                                @Ajax.ActionLink( @"Create new post", "Create", "Posts", null,
+                                    new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "dropdown-item" }
+                                    )
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        if (!User.IsInRole( "Admin" ))
+                        {
+                            @Ajax.ActionLink( @"LogIn", "Login", "Account", null,
+                                new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "btn btn-secondary" }
+                                )
+                        }
+                    }
+                    @if (!User.Identity.IsAuthenticated && !User.IsInRole( "Admin" ))
+                    {
+                        @Ajax.ActionLink( @"Sign up", "Register", "Account", null,
+                            new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "btn btn-secondary" }
+                            )
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Logout", "Account")">
+                            <button type="button" class="btn btn-secondary">Sign out</button>
+                        </a>
+                    }
+                </div>
+                <p></p>
+
+            </div>
+        </div>
+        <p></p>
+        <nav class="d-flex flex-wrap justify-content-around">
+            @foreach (var categories in Model.Categories)
+            {
+
+                @Ajax.ActionLink( @categories.Name, "CategoryFilter",
+               new { text = categories.Name },
+               new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" },
+               htmlAttributes: new { @class = "text-primary" } )
+            }
+        </nav>
+        <p></p>
+    </div>
+    <div class="container body-content">
+        <div id="main_area">
+            @if (User.IsInRole( "Admin" ))
+            {
+                foreach (var post in Model.Posts.Where( post => !post.IsDeleted ).OrderBy( post => post.PostedDateTime ))
+                {
+                    <p></p>
+                    <div class="container ">
+                        <div class="row bg-light">
+                            <div class="col-md-3">
+                                <div class="d-flex justify-content-center">
+                                    <span class="font-weight-light">
+                                        @{
+                                            var shortdate = post.PostedDateTime.ToString( "MMMM d, yyyy" );
+                                        }
+                                        @Html.DisplayFor( modelItem => shortdate )
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-center">
+                                    <h4>@Html.DisplayFor( modelItem => post.Title )</h4>
+                                </div>
+                                <div class="d-flex justify-content-center">
+
+                                    <h6>@Html.DisplayFor( modelItem => post.Category )</h6>
+                                </div>
+                                <div class="d-flex justify-content-center">
+
+                                    <img src="@Url.Action("GetThumbnailImage", "Posts", new {@post.Id})" alt="PostImage" width="170" height="170" />
+                                </div>
+                                <div class="d-flex p-2 justify-content-center">
+                                    @{if (post.Author != null && post.Author != User.Identity.Name)
+                                        {
+                                            @Ajax.ActionLink( "Author: " + post.Author, "AuthorFilter",
+                                  new { text = post.Author },
+                                  new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "badge badge-warning" }
+                                  )
+                                        }
+                                        if (post.Author == null)
+                                        {
+                                            @Ajax.ActionLink( "Author: Unknown", "AuthorFilter",
+                                    new { text = post.Author },
+                                    new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "badge badge-secondary" }
+                                    )
+                                        }
+                                        if (post.Author != null && post.Author == User.Identity.Name)
+                                        {
+                                            <div>
+                                                <span class="badge badge-success"><b>MY POST</b></span>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="d-flex justify-content-between">
+                                    <h3>@Html.DisplayFor( modelItem => post.Description )</h3>
+
+                                    @if (post.IsApproved)
+                                    {
+                                        <img src="~/Images/approved.jpg" class="rounded" width="80" height="20" alt="">
+                                    }
+                                    else if (post.IsDeclined)
+                                    {
+                                        <img src="~/Images/rejected.jpg" class="rounded" width="70" height="20" alt="">
+                                    }
+
+                                </div>
+                                <div class="d-flex justify-content-start">
+                                    <p>
+                                        @Html.DisplayFor( modelItem => post.ContentTrimmed )
+                                    </p>
+
+                                </div>
+                                <div class="d-flex p-3 align-bottom justify-content-around">
+                                    <div>
+                                        @Ajax.ActionLink( "All posts about " + post.Category, "CategoryFilter",
+                                new { text = post.Category },
+                                new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "btn btn-outline-secondary" }
+                                )
+                                    </div>
+                                    <div>
+                                        @Ajax.ActionLink( "Continue reading...", "PostViewUnauth",
+                                new { post.Id },
+                                new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "btn btn-outline-secondary" }
+                                )
+                                    </div>
+                                    @if (post.Author != null && post.Author == User.Identity.Name || User.IsInRole( "Admin" ))
+                                    {
+                                        <div>
+                                            @Ajax.ActionLink( @"Edit", "Edit", "Posts",
+                                new { id = post.Id },
+                                    new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = " btn btn-outline-secondary" }
+                                    )
+                                        </div>
+                                        <div>
+                                            @Ajax.ActionLink( @"Delete", "Delete", "Posts",
+                                    new { id = post.Id },
+                                    new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "btn btn-outline-secondary" }
+                                    )
+                                        </div>
+                                        if (post.IsDeclined)
+                                        {
+                                            <div>
+                                                @Html.ActionLink( "Approve", "ChangeStatus", "Posts",
+                                        new { id = post.Id }, htmlAttributes: new { @class = "btn btn-success" }
+                                        )
+                                            </div>
+                                        }
+                                        else if (post.IsApproved)
+                                        {
+                                            <div>
+                                                @Html.ActionLink( "Decline", "ChangeStatus", "Posts",
+                                        new { id = post.Id }, htmlAttributes: new { @class = "btn btn-danger" }
+                                        )
+                                            </div>
+                                        }
+                                        else if (!post.IsApproved && !post.IsDeclined && !post.IsDeleted)
+                                        {
+                                            <div>
+                                                @Html.ActionLink( "Approve", "ChangeStatus", "Posts",
+                                        new { id = post.Id }, htmlAttributes: new { @class = "btn btn-success" }
+                                        )
+                                            </div>
+                                            <div>
+                                                @Html.ActionLink( "Decline", "ChangeStatus", "Posts",
+                                        new { id = post.Id }, htmlAttributes: new { @class = "btn btn-danger" }
+                                        )
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            foreach (var post in Model.Posts.Where( post => post.IsApproved ).OrderBy( post => post.PostedDateTime ))
+                                            {
+                                                <p></p>
+                                                <div class="container ">
+                                                    <div class="row bg-light">
+                                                        <div class="col-md-3">
+                                                            <div class="d-flex justify-content-center">
+                                                                <span class="font-weight-light">
+                                                                    @{
+                                                                        var shortdate = post.PostedDateTime.ToString( "MMMM d, yyyy" );
+                                                                    }
+                                                                    @Html.DisplayFor( modelItem => shortdate )
+                                                                </span>
+                                                            </div>
+                                                            <div class="d-flex justify-content-center">
+                                                                <h4>@Html.DisplayFor( modelItem => post.Title )</h4>
+                                                            </div>
+                                                            <div class="d-flex justify-content-center">
+
+
+                                                                <h6>@Html.DisplayFor( modelItem => post.Category )</h6>
+                                                            </div>
+                                                            <div class="d-flex justify-content-center">
+
+                                                                <img src="@Url.Action("GetThumbnailImage", "Posts", new {@post.Id})" alt="PostImage" width="170" height="170" />
+                                                            </div>
+                                                            <div class="d-flex p-2 justify-content-center">
+                                                                @{
+
+                                                                    if (post.Author != null && post.Author != User.Identity.Name)
+                                                                    {
+                                                                        @Ajax.ActionLink( "Author: " + post.Author, "AuthorFilter",
+                                    new { text = post.Author },
+                                    new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "badge badge-warning" }
+                                    )
+                                                                    }
+                                                                    if (post.Author == null)
+                                                                    {
+                                                                        @Ajax.ActionLink( "Author: Unknown", "AuthorFilter",
+                                    new { text = post.Author },
+                                    new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "badge badge-secondary" }
+                                    )
+                                                                    }
+                                                                    if (post.Author != null && post.Author == User.Identity.Name)
+                                                                    {
+                                                                        <div>
+                                                                            <span class="badge badge-success"><b>MY POST</b></span>
+                                                                        </div>
+                                                                    }
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-9">
+                                                            <div class="d-flex justify-content-between">
+                                                                <h3>@Html.DisplayFor( modelItem => post.Description )</h3>
+                                                            </div>
+                                                            <div class="d-flex justify-content-start">
+                                                                <p>
+                                                                    @Html.DisplayFor( modelItem => post.ContentTrimmed )
+                                                                </p>
+
+                                                            </div>
+                                                            <div class="d-flex p-3 align-bottom justify-content-around">
+                                                                <div>
+                                                                    @Ajax.ActionLink( "All posts about " + post.Category, "CategoryFilter", new { text = post.Category },
+                                new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "btn btn-outline-secondary" } )
+                                                                </div>
+                                                                <div>
+                                                                    @Ajax.ActionLink( "Continue reading...", "PostViewUnauth", new { post.Id },
+                                new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "btn btn-outline-secondary" } )
+                                                                </div>
+                                                                @if (post.Author != null && post.Author == User.Identity.Name)
+                                                                {
+                                                                    <div>
+                                                                        @Ajax.ActionLink( @"Edit", "Edit", "Posts", new { id = post.Id },
+                                    new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = " btn btn-outline-secondary" } )
+                                                                    </div>
+                                                                    <div>
+                                                                        @Ajax.ActionLink( @"Delete", "Delete", "Posts", new { id = post.Id },
+                                    new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "btn btn-outline-secondary" } )
+                                                                    </div>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                                        }
+
+                                                                    }
+
+        </div>
+    </div>
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    @Styles.Render( "~/Content/css" )
+    @Scripts.Render( "~/bundles/modernizr" )
+    <script type="text/javascript">
+        function hideLabel() {
+            $('#newImg').hide();
+        }
+    </script>
+    <script>
+        $(function () {
+            var links = $("nav>a[class$='text-primary']");
+            links.eq(0).addClass("text-dark btn btn-outline-success");
+            links.eq(1).addClass("text-dark btn btn-outline-primary");
+            links.eq(2).addClass("text-dark btn btn-outline-secondary");
+            links.eq(3).addClass("text-dark btn btn-outline-danger");
+            links.eq(4).addClass("text-dark btn btn-outline-warning");
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#newImg").click(function () {
+                $("#newImg").attr("hidden");
+            });
+        });
+    </script>
+</body>
+</html>

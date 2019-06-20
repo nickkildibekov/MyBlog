@@ -1,0 +1,105 @@
+﻿@model Common.Models.Post
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <title>@ViewBag.Title - My Blog</title>
+    @Styles.Render( "~/Content/css" )
+    @Scripts.Render( "~/bundles/modernizr" )
+
+</head>
+<body>
+    @Scripts.Render( "~/bundles/jquery" )
+    @Scripts.Render( "~/bundles/jqueryval" )
+
+
+    @using (Html.BeginForm ("Edit", "Posts", FormMethod.Post, new { enctype = "multipart/form-data" } ))
+    { @Html.AntiForgeryToken()
+        <div class="form-horizontal">
+           
+            @Html.ValidationSummary( true, "", new { @class = "text-danger" } )
+            @Html.HiddenFor( model => model.Author )
+            @Html.HiddenFor( model => model.ImageData )
+            @Html.HiddenFor( model => model.ImageThumbnail)
+            @Html.HiddenFor( model => model.ImageMimeType)
+            <div class="row d-flex justify-content-around">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor( model => model.Title, htmlAttributes: new { @class = "control-label " } )
+                            <div>
+                                @Html.EditorFor( model => model.Title, new { htmlAttributes = new { @class = "form-control" } } )
+                                @Html.ValidationMessageFor( model => model.Title, "", new { @class = "text-danger" } )
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            @Html.LabelFor( model => model.Description, htmlAttributes: new { @class = "control-label" } )
+                            <div>
+                                @Html.EditorFor( model => model.Description, new { htmlAttributes = new { @class = "form-control" } } )
+                                @Html.ValidationMessageFor( model => model.Description, "", new { @class = "text-danger" } )
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group ">
+                            @Html.LabelFor( model => model.Category, htmlAttributes: new { @class = "control-label " } )
+                            <div>
+                                @Html.DropDownListFor( model => model.Category, new[]
+                                {
+                                    new SelectListItem() {Text = "Choose category", Value = ""},
+                                    new SelectListItem() {Text = "Travel", Value = "Travel"},
+                                    new SelectListItem() {Text = "Sport", Value = "Sport"},
+                                    new SelectListItem() {Text = "Technology", Value = "Technology"},
+                                    new SelectListItem() {Text = "Recreation", Value = "Recreation"},
+                                    new SelectListItem() {Text = "Misc", Value = "Misc"}
+                                }, htmlAttributes: new { @class = "form-control" }
+                                    )
+                                @Html.ValidationMessageFor( model => model.Category, "", new { @class = "text-danger" } )
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <div>
+                                @Html.LabelFor( model => model.ImageData, htmlAttributes: new { @class = "control-label " } )
+                                <input type="file" name="file" class="btn" value="Choose File">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row ">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        @Html.LabelFor( model => model.Content, htmlAttributes: new { @class = "control-label " } )
+                        <div>
+                            @Html.TextAreaFor( model => model.Content, 15, 40, htmlAttributes: new { style = "width: 100%; max-width: 100%;" } )
+                            @Html.ValidationMessageFor( model => model.Content, "", new { @class = "text-danger" } )
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="form-group">
+                <div class="d-flex justify-content-center ">
+                    <input type="submit" value="Save" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+    }
+</body>
+</html>

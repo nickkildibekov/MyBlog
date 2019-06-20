@@ -1,0 +1,177 @@
+﻿@model WebSite.ViewModels.PostAndComment
+
+
+@foreach (var item in Model.Posts)
+{
+    <div class="container  ">
+        <div class="row bg-light">
+            <div class="col-md-3">
+                <div class="d-flex justify-content-center">
+                    <span class="font-weight-light">
+                        @{
+                            var shortdate = item.PostedDateTime.ToString( "MMMM d, yyyy" );
+                        }
+                        @Html.DisplayFor( modelItem => shortdate )
+                    </span>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <h4>@Html.DisplayFor( modelItem => item.Title )</h4>
+                </div>
+                <div class="d-flex justify-content-center">
+
+                    <h6>@Html.DisplayFor( modelItem => item.Category )</h6>
+                </div>
+                <div class="d-flex justify-content-center">
+
+                    <img src="@Url.Action("GetThumbnailImage", "Posts", new {item.Id})" alt="PostImage" width="170" height="170" />
+                </div>
+                <div class="d-flex p-2 justify-content-center">
+                    
+
+                        @if (item.Author != null && item.Author != User.Identity.Name)
+                        {
+                            @Ajax.ActionLink( @"Author unknown", "AuthorFilter", "Home",
+                            new { text = item.Author },
+                                new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes:
+                            new { @class = "badge badge-warning" }
+                                        )
+                        }
+                        @if (item.Author == null)
+                        {
+                            @Ajax.ActionLink( @"Author unknown", "AuthorFilter", "Home",
+                                new { text = item.Author },
+                                new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "badge badge-secondary" }
+                                )
+                        }
+                        @if(item.Author != null && item.Author == User.Identity.Name)
+                        {
+                            <div>
+                                <span class="badge badge-success"><b>MY POST</b></span>
+                            </div>
+                        }
+                    
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="d-flex justify-content-between">
+                    <h3>@Html.DisplayFor( modelItem => item.Description )</h3>
+                </div>
+                <div class="d-flex justify-content-start">
+                    <p>
+                        @Html.DisplayFor( modelItem => item.ContentTrimmed )
+                    </p>
+
+                </div>
+                <div class="d-flex p-3 align-bottom justify-content-around">
+                    <div>
+                        @Ajax.ActionLink( "All posts about " + item.Category, "CategoryFilter", "Home",
+                            new { text = item.Category },
+                            new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "btn btn-outline-secondary" }
+                            )
+                    </div>
+                    <div>
+                        <a class="btn btn-outline-warning" href="@Url.Action("Index", "Home")"> Back to main page </a>
+                    </div>
+                    @if (item.Author != null && item.Author == User.Identity.Name)
+                    {
+                        <div>
+                            @Ajax.ActionLink( @"Edit", "Edit", "Posts",
+                                new { id = item.Id },
+                                new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = " btn btn-outline-secondary" }
+                                )
+                        </div>
+                        <div>
+                            @Ajax.ActionLink( @"Delete", "Delete", "Posts",
+                                new { id = item.Id },
+                                new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "btn btn-outline-secondary" }
+                                )
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <h4>Comments : @item.Comments.ToList().Count</h4>
+                        foreach (var comment in Model.Comments.Where( c => c.CurrentPost.Id == item.Id ))
+                        {
+                            <div id="comment">
+                                <div class="row border rounded">
+                                    <div class="col-md-9">
+                                        <div class="row">
+                                            <div class="col-md-1 col-sm-2 text-center pr-1">
+                                                <a href=""><img class="mx-auto rounded-circle img-fluid" src="~/Images/avatar.png" alt="avatar" width="200" height="200"></a>
+                                            </div>
+                                            <div class="col-md-11 col-sm-10">
+                                                <h6 class="small">@comment.Author</h6>
+                                                <div>
+                                                    <p>
+                                                        @comment.Content
+                                                        <br>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        <div id="newCommentBlock" class="d-none">
+                            <div class="row border rounded">
+                                <div class="col-md-9">
+                                    <div class="row">
+                                        <div class="col-md-1 col-sm-2 text-center pr-1">
+                                            <a href=""><img class="mx-auto rounded-circle img-fluid" src="~/Images/avatar.png" alt="avatar" width="200" height="200"></a>
+                                        </div>
+                                        <div class="col-md-11 col-sm-10">
+                                            <h6 id="commentAuthor"></h6>
+                                            <div>
+                                                <p id="commentContent">
+                                                <p></p>
+                                                <br>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p></p>
+                        </div>
+                        <div>
+                            <form id="commentForm">
+                                <div class="form-group">
+                                    <label for="textArea">Add some comment in form below</label>
+                                    <textarea class="form-control" id="textArea" rows="3"></textarea>
+                                </div>
+                                <button type="button" form="commentForm" id="@item.Id" onclick="CreateComment(this)">Submit</button>
+                                <button type="reset" value="Reset">Cancel</button>
+                            </form>
+                        </div>
+                        }
+
+<script>
+    function CreateComment(btn) {
+        var actionPath = '@Url.Action("Create", "Comments")';
+        $('#defaultSign').attr("hidden");
+        $('#newCommentBlock').addClass("d-block");
+        var commentCont = $('#textArea').val();
+        $("<p>" + commentCont + "<p>").prependTo($("#commentContent"));
+        var postId = btn.id;
+        var currUser = '@User.Identity.Name';
+        $("<p>" + currUser + "<p>").prependTo($("#commentAuthor"));
+        var comment = {
+            Author: currUser,
+            Content: commentCont
+        };
+        $.ajax({
+            type: "POST",
+            url: actionPath,
+            data: { comment, postId },
+            success: function () { },
+            error: function (xhr) {
+                alert("Error: " + xhr.responseText);
+            }
+        });
+    }
+</script>
+
+

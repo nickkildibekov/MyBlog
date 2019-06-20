@@ -1,0 +1,76 @@
+﻿@model IEnumerable<Common.Models.Post>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <title>@ViewBag.Title - My Blog</title>
+    @Styles.Render( "~/Content/css" )
+    @Scripts.Render( "~/bundles/modernizr" )
+
+</head>
+<body>
+    <p>
+        @Html.ActionLink( "Create New", "Create" )
+    </p>
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor( model => model.Title )
+            </th>
+            <th>
+                @Html.DisplayNameFor( model => model.Description )
+            </th>
+            <th>
+                @Html.DisplayNameFor( model => model.Content )
+            </th>
+            <th>
+                @Html.DisplayNameFor( model => model.Category )
+            </th>
+            <th>
+                @Html.DisplayNameFor( model => model.PostedDateTime )
+            </th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor( modelItem => item.Title )
+                </td>
+                <td>
+                    @Html.DisplayFor( modelItem => item.Description )
+                </td>
+                <td>
+                    @Html.DisplayFor( modelItem => item.Content )
+                    <div class="text-left">
+                        @Html.ActionLink( "Edit", "Edit", new { id = item.Id } ) |
+                        @Html.ActionLink( "Details", "Details", new { id = item.Id } ) |
+                        @Html.ActionLink( "Delete", "Delete", new { id = item.Id } )
+                    </div>
+                </td>
+                <td>
+                    @Html.DisplayFor( modelItem => item.Category )
+                </td>
+                <td>
+                    @Html.DisplayFor( modelItem => item.PostedDateTime )
+                </td>
+                <td>
+                    @Html.DisplayFor( modelItem => item.ModifiedDateTime )
+                </td>
+
+            </tr>
+        }
+
+    </table>
+</body>
+</html>

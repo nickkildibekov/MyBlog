@@ -1,0 +1,98 @@
+﻿@model IEnumerable<Common.Models.Post>
+
+@foreach (var item in Model)
+{
+    <p></p>
+    <div class="container">
+        <div class="row bg-light">
+            <div class="col-md-3">
+                <div class="d-flex justify-content-center">
+                    <span class="font-weight-light">
+                        @{
+                            var shortdate = item.PostedDateTime.ToString( "MMMM d, yyyy" );
+                        }
+                        @Html.DisplayFor( modelItem => shortdate )
+                    </span>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <h4>@Html.DisplayFor( modelItem => item.Title )</h4>
+                </div>
+                <div class="d-flex justify-content-center">
+
+                    <h6>@Html.DisplayFor( modelItem => item.Category )</h6>
+                </div>
+                <div class="d-flex justify-content-center">
+
+                    <img src="@Url.Action("GetThumbnailImage", "Posts", new {item.Id})" alt="PostImage" width="170" height="170" />
+                </div>
+                <div class="d-flex p-2 justify-content-center">
+                    @{
+
+                        if (item.Author != null && item.Author != User.Identity.Name)
+                        {
+                            @Ajax.ActionLink( "Author: " + item.Author,null,
+                                new { text = item.Author },
+                                new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "badge badge-warning" }
+                                )
+                        }
+                        if (item.Author == null)
+                        {
+                            @Ajax.ActionLink( "Author: Unknown", null,
+                                new { text = item.Author },
+                                new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "badge badge-secondary"}
+                                )
+                        }
+                        if (item.Author != null && item.Author == User.Identity.Name)
+                        {
+                            <div>
+                                <span class="badge badge-success"><b>MY POST</b></span>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="d-flex justify-content-between">
+                    <h3>@Html.DisplayFor( modelItem => item.Description )</h3>
+                </div>
+                <div class="d-flex justify-content-start">
+                    <p>
+                        @Html.DisplayFor( modelItem => item.ContentTrimmed )
+                    </p>
+                                
+                </div>
+                <div class="d-flex p-3 align-bottom justify-content-around">
+                    <div>
+                        @Ajax.ActionLink( "All posts about " + item.Category, "CategoryFilter","Home",
+                            new { text = item.Category },
+                            new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "btn btn-outline-secondary" }
+                            )
+                    </div>
+                    <div>
+                        @Ajax.ActionLink( @"Continue reading...", "PostViewUnauth","Home",
+                            new { item.Id },
+                            new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "btn btn-outline-secondary" }
+                            )
+                    </div>
+                    @if (item.Author != null && item.Author == User.Identity.Name)
+                    {
+                        <div>
+                            @Ajax.ActionLink( @"Edit", "Edit", "Posts",
+                                new { id = item.Id },
+                                new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = " btn btn-outline-secondary" }
+                                )
+                        </div>
+                        <div>
+                            @Ajax.ActionLink( @"Delete", "Delete", "Posts",
+                                new { id = item.Id },
+                                new AjaxOptions { HttpMethod = "GET", UpdateTargetId = "main_area" }, htmlAttributes: new { @class = "btn btn-outline-secondary" }
+                                )
+                        </div>
+                    }
+                </div>
+            </div>
+            <p></p>
+
+        </div>
+    </div>
+}
